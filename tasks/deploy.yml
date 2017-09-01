@@ -13,6 +13,24 @@
   when:
     - server_role == "fpm"
 
+- name: Override the Magento Base Url
+  command: bin/magento setup:store-config:set --base-url="http://{{ nex_app_public_addr if magento_base_url_override == "public_ip" else magento_base_url_override }}"
+    chdir="{{ nex_app_build_code_base }}"
+  become: yes
+  become_user: "{{ nex_app_unix_user }}"
+  when:
+    - inventory_hostname == groups['fs'][0]
+    - magento_base_url_override is defined
+
+- name: Override the Magento Secure Base Url
+  command: bin/magento setup:store-config:set --base-url-secure="https://{{ nex_app_public_addr if magento_base_url_override == "public_ip" else magento_base_url_override }}"
+    chdir="{{ nex_app_build_code_base }}"
+  become: yes
+  become_user: "{{ nex_app_unix_user }}"
+  when:
+    - inventory_hostname == groups['fs'][0]
+    - magento_base_url_override is defined
+
 - name: Reset Sample Data
   command: bin/magento sampledata:reset
   args:
